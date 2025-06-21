@@ -43,35 +43,33 @@ int main() {
         return 1;
     }
 
-    SOCKET sock = socket(AF_INET, SOCK_STREAM, 0);
+    addrinfo hints{}, * res = nullptr;
+    hints.ai_family = AF_UNSPEC;       // IPv4 or IPv6
+    hints.ai_socktype = SOCK_STREAM;
+
+    std::string port_str = std::to_string(port);
+    if (getaddrinfo(host.c_str(), port_str.c_str(), &hints, &res) != 0) {
+        std::cerr << "getaddrinfo() failed for " << host << "\n";
+        return 1;
+    }
+
+    SOCKET sock = INVALID_SOCKET;
+    for (addrinfo* ptr = res; ptr != nullptr; ptr = ptr->ai_next) {
+        sock = socket(ptr->ai_family, ptr->ai_socktype, ptr->ai_protocol);
+        if (sock == INVALID_SOCKET) continue;
+        if (connect(sock, ptr->ai_addr, ptr->ai_addrlen) == 0) break;
+        close_socket(sock);
+        sock = INVALID_SOCKET;
+    }
+
+    freeaddrinfo(res);
+
     if (sock == INVALID_SOCKET) {
-        std::cerr << "Socket creation failed\n";
+        std::cerr << "Failed to connect to server\n";
         return 1;
     }
 
-    sockaddr_in server_addr{};
-    server_addr.sin_family = AF_INET;
-    server_addr.sin_port = htons(port);
-
-    hostent* server = gethostbyname(host.c_str());
-    if (!server) {
-        std::cerr << "Failed to resolve host: " << host << "\n";
-        close_socket(sock);
-        cleanup_socket_system();
-        return 1;
-    }
-
-    std::memcpy(&server_addr.sin_addr, server->h_addr, server->h_length);
-
-    std::cout << "Connecting to " << host << ":" << port << "...\n";
-    if (connect(sock, (sockaddr*)&server_addr, sizeof(server_addr)) < 0) {
-        std::cerr << "Connection failed\n";
-        close_socket(sock);
-        cleanup_socket_system();
-        return 1;
-    }
-
-    // 发送用户名作为第一条消息
+    // 发送用户名
     send(sock, username.c_str(), username.length(), 0);
 
     std::thread(receive_messages, sock).detach();
