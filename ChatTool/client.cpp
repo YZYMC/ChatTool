@@ -7,6 +7,9 @@
 #include <thread>
 #include <cstring>
 #define _CRT_SECURE_NO_WARNINGS
+#ifdef _WIN32
+#include <windows.h>
+#endif
 
 std::string username;
 
@@ -22,7 +25,14 @@ void receive_messages(SOCKET sock) {
     exit(0);
 }
 
-int main() {
+int main()
+{
+#ifdef _WIN32
+    // 设置控制台输入输出为 UTF-8
+    SetConsoleOutputCP(CP_UTF8);
+    SetConsoleCP(CP_UTF8);
+    std::ios_base::sync_with_stdio(false); // 加速 & 修复控制台同步问题
+#endif
     if (!init_socket_system()) {
         std::cerr << "Socket system init failed\n";
         return 1;
