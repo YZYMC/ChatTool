@@ -11,6 +11,11 @@
 
 ---
 
+## 仓库地址
+
+[GitHub](https://github.com/YZYNetwork/ChatTool/)  
+[国内镜像](https://gea.yzynetwork.xyz:28445/YZYNetwork/ChatTool)  
+
 ## 如何编译
 **如果您没有编译条件，请前往`Release`下载预编译版本。**  
   
