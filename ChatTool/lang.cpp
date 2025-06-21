@@ -12,26 +12,26 @@ static std::string current_lang = "en";
 static const std::map<std::string, std::map<std::string, std::string>> translations = {
     {
         "en", {
-            {"join", "{0} has joined the chat."},
-            {"leave", "{0} has left the chat."},
-            {"connected", "Connected to server."},
-            {"enter_msg", "Enter message:"},
-            {"disconnected", "Disconnected from server."},
-            {"help", "Available commands:\n  /tell [username] [message] - Private message\n  /list - List users\n  /quit - Exit"},
-            {"list", "Online users:"},
-            {"error_prefix", "[System] "}
+            {"join", u8"{0} has joined the chat."},
+            {"leave", u8"{0} has left the chat."},
+            {"connected", u8"Connected to server."},
+            {"enter_msg", u8"Enter message:"},
+            {"disconnected", u8"Disconnected from server."},
+            {"help", u8"Available commands:\n  /tell [username] [message] - Private message\n  /list - List users\n  /quit - Exit"},
+            {"list", u8"Online users:"},
+            {"error_prefix", u8"[System] "}
         }
     },
     {
         "zh", {
-            {"join", "{0} 加入了聊天。"},
-            {"leave", "{0} 退出了聊天。"},
-            {"connected", "已连接到服务器。"},
-            {"enter_msg", "输入消息："},
-            {"disconnected", "与服务器断开连接。"},
-            {"help", "可用指令：\n  /tell [用户名] [消息] - 私聊\n  /list - 显示在线用户\n  /quit - 退出"},
-            {"list", "当前在线用户："},
-            {"error_prefix", "[系统] "}
+            {"join", u8"{0} 加入了聊天。"},
+            {"leave", u8"{0} 退出了聊天。"},
+            {"connected", u8"已连接到服务器。"},
+            {"enter_msg", u8"输入消息："},
+            {"disconnected", u8"与服务器断开连接。"},
+            {"help", u8"可用指令：\n  /tell [用户名] [消息] - 私聊\n  /list - 显示在线用户\n  /quit - 退出"},
+            {"list", u8"当前在线用户："},
+            {"error_prefix", u8"[系统] "}
         }
     }
 };

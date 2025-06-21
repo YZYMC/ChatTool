@@ -49,7 +49,7 @@ int main(int argc, char* argv[])
     // 设置控制台输入输出为 UTF-8
     SetConsoleOutputCP(CP_UTF8);
     SetConsoleCP(CP_UTF8);
-    std::ios_base::sync_with_stdio(false);
+    std::ios::sync_with_stdio(false);
 #endif
 
     std::string lang_code;
