@@ -3,6 +3,11 @@ project(ChatTool)
 
 set(CMAKE_CXX_STANDARD 17)
 
+# 添加源文件
+set(SOURCES_COMMON
+    lang.cpp
+)
+
 # 客户端目标
 add_executable(client client.cpp ${SOURCES_COMMON})
 
