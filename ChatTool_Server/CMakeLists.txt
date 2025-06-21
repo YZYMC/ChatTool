@@ -1,9 +1,7 @@
 cmake_minimum_required(VERSION 3.10)
-project(ChatServer)
+project(ChatTool_Server)
 
 set(CMAKE_CXX_STANDARD 17)
-
-include_directories(../common)
 
 add_executable(server server.cpp)
 
