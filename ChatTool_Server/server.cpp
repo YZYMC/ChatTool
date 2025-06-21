@@ -49,12 +49,44 @@ void handle_client(SOCKET client_sock) {
         if (len <= 0) break;
         buffer[len] = '\0';
 
-        std::string full_msg = username + ": " + buffer;
+        std::string input(buffer);
 
-        std::lock_guard<std::mutex> lock(clients_mutex);
-        for (auto& [sock, _] : client_names) {
-            if (sock != client_sock)
-                send(sock, full_msg.c_str(), full_msg.length(), 0);
+        // 私聊命令处理
+        if (input.rfind("/tell ", 0) == 0) {
+            size_t first_space = input.find(' ', 6);
+            if (first_space == std::string::npos) {
+                std::string err = "[系统] 用法：/tell 用户名 消息";
+                send(client_sock, err.c_str(), err.length(), 0);
+                continue;
+            }
+
+            std::string target_name = input.substr(6, first_space - 6);
+            std::string private_msg = input.substr(first_space + 1);
+
+            SOCKET target_sock = INVALID_SOCKET;
+            {
+                std::lock_guard<std::mutex> lock(clients_mutex);
+                for (const auto& [sock, name] : client_names) {
+                    if (name == target_name) {
+                        target_sock = sock;
+                        break;
+                    }
+                }
+            }
+
+            if (target_sock == INVALID_SOCKET) {
+                std::string err = "[系统] 用户 " + target_name + " 不在线";
+                send(client_sock, err.c_str(), err.length(), 0);
+            }
+            else {
+                std::string msg_to_target = "[私信] " + username + "： " + private_msg;
+                std::string msg_to_sender = "[系统] 私信发送成功";
+
+                send(target_sock, msg_to_target.c_str(), msg_to_target.length(), 0);
+                send(client_sock, msg_to_sender.c_str(), msg_to_sender.length(), 0);
+            }
+
+            continue;  // 跳过广播逻辑
         }
     }
 
