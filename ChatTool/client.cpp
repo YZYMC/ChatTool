@@ -116,7 +116,7 @@ int main(int argc, char* argv[])
 
     std::string msg;
     while (true) {
-        std::cout << tr("enter_msg") << " ";
+        std::cout << "> ";
         std::getline(std::cin, msg);
         if (msg == "/quit") break;
         else if (msg == "/help") {
