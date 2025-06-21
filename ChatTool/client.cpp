@@ -3,9 +3,11 @@
 // Copyright (c) 2025 yzymc
 #include "common_socket.h"
 #include "config_parser.h"
+#include "lang.h"
 #include <iostream>
 #include <thread>
 #include <cstring>
+#include <vector>
 #define _CRT_SECURE_NO_WARNINGS
 #ifdef _WIN32
 #include <windows.h>
@@ -19,20 +21,46 @@ void receive_messages(SOCKET sock) {
         int len = recv(sock, buffer, sizeof(buffer) - 1, 0);
         if (len <= 0) break;
         buffer[len] = '\0';
-        std::cout << "\n" << buffer << "\n> " << std::flush;
+        std::string msg(buffer);
+
+        if (msg.rfind("SYS:JOIN:", 0) == 0) {
+            std::cout << format(tr("join"), msg.substr(9)) << "\n> " << std::flush;
+        }
+        else if (msg.rfind("SYS:LEAVE:", 0) == 0) {
+            std::cout << format(tr("leave"), msg.substr(10)) << "\n> " << std::flush;
+        }
+        else if (msg.rfind("SYS:ERROR:", 0) == 0) {
+            std::cout << tr("error_prefix") << msg.substr(10) << "\n> " << std::flush;
+        }
+        else if (msg.rfind("SYS:LIST:", 0) == 0) {
+            std::cout << tr("list") << "\n" << msg.substr(9) << "\n> " << std::flush;
+        }
+        else {
+            std::cout << "\n" << msg << "\n> " << std::flush;
+        }
     }
-    std::cerr << "\nDisconnected from server.\n";
+    std::cerr << "\n" << tr("disconnected") << "\n";
     exit(0);
 }
 
-int main()
+int main(int argc, char* argv[])
 {
 #ifdef _WIN32
     // 设置控制台输入输出为 UTF-8
     SetConsoleOutputCP(CP_UTF8);
     SetConsoleCP(CP_UTF8);
-    std::ios_base::sync_with_stdio(false); // 加速 & 修复控制台同步问题
+    std::ios_base::sync_with_stdio(false);
 #endif
+
+    std::string lang_code;
+    for (int i = 1; i < argc; ++i) {
+        if (std::string(argv[i]) == "-lang" && i + 1 < argc) {
+            lang_code = argv[++i];
+        }
+    }
+    if (lang_code.empty()) lang_code = detect_lang();
+    set_language(lang_code);
+
     if (!init_socket_system()) {
         std::cerr << "Socket system init failed\n";
         return 1;
@@ -54,7 +82,7 @@ int main()
     }
 
     addrinfo hints{}, * res = nullptr;
-    hints.ai_family = AF_UNSPEC;       // IPv4 or IPv6
+    hints.ai_family = AF_UNSPEC;
     hints.ai_socktype = SOCK_STREAM;
 
     std::string port_str = std::to_string(port);
@@ -79,6 +107,8 @@ int main()
         return 1;
     }
 
+    std::cout << tr("connected") << "\n";
+
     // 发送用户名
     send(sock, username.c_str(), username.length(), 0);
 
@@ -86,10 +116,15 @@ int main()
 
     std::string msg;
     while (true) {
-        std::cout << "> ";
+        std::cout << tr("enter_msg") << " ";
         std::getline(std::cin, msg);
         if (msg == "/quit") break;
-        send(sock, msg.c_str(), msg.length(), 0);
+        else if (msg == "/help") {
+            std::cout << tr("help") << "\n";
+        }
+        else {
+            send(sock, msg.c_str(), msg.length(), 0);
+        }
     }
 
     close_socket(sock);

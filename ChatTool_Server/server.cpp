@@ -35,7 +35,7 @@ void handle_client(SOCKET client_sock)
 		client_names[client_sock] = username;
 	}
 
-	std::string join_msg = "[Server] " + username + " has joined.";
+	std::string join_msg = "SYS:JOIN:" + username;
 	{
 		std::lock_guard<std::mutex> lock(clients_mutex);
 		for (auto& [sock, _] : client_names) {
@@ -57,7 +57,7 @@ void handle_client(SOCKET client_sock)
 		if (input.rfind("/tell ", 0) == 0) {
 			size_t first_space = input.find(' ', 6);
 			if (first_space == std::string::npos) {
-				std::string err = "[系统] 用法：/tell 用户名 消息";
+				std::string err = "SYS:ERROR:用法：/tell 用户名 消息";
 				send(client_sock, err.c_str(), err.length(), 0);
 			}
 			else {
@@ -76,17 +76,28 @@ void handle_client(SOCKET client_sock)
 				}
 
 				if (target_sock == INVALID_SOCKET) {
-					std::string err = "[系统] 用户 " + target_name + " 不在线";
+					std::string err = "SYS:ERROR:用户 " + target_name + " 不在线";
 					send(client_sock, err.c_str(), err.length(), 0);
 				}
 				else {
 					std::string msg_to_target = "[私信] " + username + "： " + private_msg;
-					std::string msg_to_sender = "[系统] 私信发送成功";
+					std::string msg_to_sender = "SYS:ERROR:私信发送成功";
 
 					send(target_sock, msg_to_target.c_str(), msg_to_target.length(), 0);
 					send(client_sock, msg_to_sender.c_str(), msg_to_sender.length(), 0);
 				}
 			}
+		}
+		else if (input == "/list") {
+			std::string list = "";
+			{
+				std::lock_guard<std::mutex> lock(clients_mutex);
+				for (auto& [_, name] : client_names) {
+					list += name + "\n";
+				}
+			}
+			std::string msg = "SYS:LIST:" + list;
+			send(client_sock, msg.c_str(), msg.length(), 0);
 		}
 		else {
 			// 群聊消息广播
@@ -102,7 +113,7 @@ void handle_client(SOCKET client_sock)
 	// 离线清理
 	{
 		std::lock_guard<std::mutex> lock(clients_mutex);
-		std::string leave_msg = "[Server] " + username + " left.";
+		std::string leave_msg = "SYS:LEAVE:" + username;
 		client_names.erase(client_sock);
 		for (auto& [sock, _] : client_names)
 			send(sock, leave_msg.c_str(), leave_msg.length(), 0);
