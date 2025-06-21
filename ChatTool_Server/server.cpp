@@ -98,19 +98,18 @@ void handle_client(SOCKET client_sock)
 					send(sock, full_msg.c_str(), full_msg.length(), 0);
 			}
 		}
-
-		// 离线清理
-		{
-			std::lock_guard<std::mutex> lock(clients_mutex);
-			std::string leave_msg = "[Server] " + username + " left.";
-			client_names.erase(client_sock);
-			for (auto& [sock, _] : client_names)
-				send(sock, leave_msg.c_str(), leave_msg.length(), 0);
-		}
-
-		std::cout << username << " disconnected.\n";
-		close_socket(client_sock);
 	}
+	// 离线清理
+	{
+		std::lock_guard<std::mutex> lock(clients_mutex);
+		std::string leave_msg = "[Server] " + username + " left.";
+		client_names.erase(client_sock);
+		for (auto& [sock, _] : client_names)
+			send(sock, leave_msg.c_str(), leave_msg.length(), 0);
+	}
+
+	std::cout << username << " disconnected.\n";
+	close_socket(client_sock);
 }
 
 int main() {
